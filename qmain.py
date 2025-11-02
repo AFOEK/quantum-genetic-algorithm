@@ -10,7 +10,12 @@ def main():
         gen=50,
         pop_size=25,
         elite_k=12,
-        lr=0.01
+        lr_start= 0.08,
+        lr_decay= 0.95,
+        mutation_prob= 0.20,
+        mutation_sigma= 0.03,
+        epsilon_start= 0.10,
+        epsilon_decay= 0.90
     )
 
     print("assignment (job -> resource): ", best[0])

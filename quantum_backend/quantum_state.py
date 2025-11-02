@@ -1,7 +1,9 @@
 from typing import List
 from .circuit_builder import QJob
 from .circuit_sampler import sample_job_res_masked
+from simulator.feasibility import job_can_run_on
 from .circuit_update import update_toward_res
+import numpy as np
 
 class QGAState:
     def __init__(self, num_jobs: int, num_res: int):
@@ -15,13 +17,15 @@ class QGAState:
             for _ in range(num_jobs)
         ]
     
-    def sample_assigment(self, jobs, res):
+    def sample_assignment(self, jobs, res, eps: float= 0.0):
         assignment = []
         for j in range(self.num_jobs):
-            chosen_res = sample_job_res_masked(
-                jobs[j], self.job_circuits[j], res, shots=512
-            )
-            assignment.append(chosen_res if chosen_res is not None else 0)
+            if np.random.rand() < eps:
+                feasible = [r.res_id for r in res if job_can_run_on(jobs[j], r)]
+                ridx = np.random.choice(feasible) if feasible else 0
+            else:
+                ridx =  sample_job_res_masked(jobs[j], self.job_circuits[j], res, shots=512)
+            assignment.append(int(ridx))
         return assignment
     
     def update_towards_elite(self, elite_assign, lr: float = 0.01):
@@ -34,5 +38,5 @@ class QGAState:
                 lr=lr
             )
         after = [jc.theta for jc in self.job_circuits]
-        delta = sum(float((a-b).mean()) for a,b in zip(after, before)) / self.num_jobs
-        print(f"Debug mean d_theta per job, mean: {abs(delta):.4f}")
+        mean_delta = float(np.mean([np.mean(np.abs(a - b)) for a, b in zip(after, before)]))
+        return mean_delta

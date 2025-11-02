@@ -9,7 +9,7 @@ def sim_alloc(
         w_cost: float = 1.0,
         w_makespan: float = 1.0,
         w_penalty: float = 10.0,
-        w_violation: float = 1000.0
+        w_violation: float = 5000.0
 ):
     res_to_job: Dict[int, List[Job]] = {r.res_id: [] for r in resources}
     for j in jobs:

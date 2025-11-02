@@ -9,22 +9,13 @@ def update_toward_res(job_circ, target_res: int, num_res: int, lr: float =0.01):
 
     theta = job_circ.theta.copy()
 
-    for q in range(num_qubits):
-        bit = target_bits[num_qubits - 1 - q]
+    if num_qubits >= 1:
+        bit_q0 = target_bits[-1]
+        theta[0] += (+1 if bit_q0 == '1' else -0.6) * lr
+    if num_qubits >=2 :
+        bit_q1 = target_bits[-2] if len(target_bits) >= 2 else '0'
+        theta[1] += (+1 if bit_q1 == "1" else -0.6) * lr
 
-        if q == 0:
-            idx = 0
-        elif q == 1:
-            idx = 1
-        else:
-            continue
-
-        if bit == "1":
-            theta[idx] += lr
-        else:
-            theta[idx] -= lr
-
-    theta[2] += 0.5 * lr
-
+    theta[2] += 0.8 * lr
     theta = np.clip(theta, 0.0, np.pi)
     job_circ.theta = theta
