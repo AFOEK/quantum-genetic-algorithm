@@ -45,7 +45,7 @@ def run_qga(
         learn_from_assign = random.choice(elites)[0]
 
         mean_dtheta = qga.update_towards_elite(learn_from_assign, lr= lr)
-        print(f"[GEN {gen:02d}] best_fit={best_gen[1]:.3f}  mean Δθ={mean_dtheta:.4f}  lr={lr:.4f}  eps={epsilon:.3f}")
+        print(f"[GEN {gens:02d}] best_fit={best_gen[1]:.3f}  mean Δθ={mean_dtheta:.4f}  lr={lr:.4f}  eps={epsilon:.3f}")
         
         for jc in qga.job_circuits:
             if np.random.rand() < mutation_prob:
