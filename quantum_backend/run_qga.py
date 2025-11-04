@@ -19,7 +19,7 @@ def run_qga(
         num_qubits: int = 2,
         shots: int = 512
 ):
-    qga = QGAState(num_jobs=len(jobs), num_res=len(res), num_qubits=num_qubits)
+    qga = QGAState(num_jobs=len(jobs), num_res=len(res), num_qubits=num_qubits, shots=shots)
     best_overall: Tuple[List[int], float, Dict[str, Any]] = None
     hist: List[Dict[str, Any]] = []
     lr = lr_start

@@ -20,14 +20,15 @@ def load_resources(path: str) -> List[Resource]:
         res.append(
             Resource(
                 res_id=rid,
-                name=r["name"],
-                cpu_cap=int(r.get("cpu_cap"), 0),
-                ram_cap=int(r.get("ram_cap"), 0),
-                gpu_cap=int(r.get("gpu_cap"), 0),
-                qpu_cap=int(r.get("qpu_cap"), 0),
-                parallel_capacity=int(r.get("parallel_cap"), 1),
-                cost_per_sec=float(r.get("cost_per_sec"), 0.0),
-                queue_delay=float(r.get("queue_delay"), 0.0)
+                name=str(r.get("name", f"res_{rid}")),
+                res_type=str(r.get("res_type", "cpu")),
+                cpu_cap=int(r.get("cpu_cap", 0)),
+                ram_cap=int(r.get("ram_cap", 0)),
+                gpu_cap=int(r.get("gpu_cap", 0)),
+                qpu_cap=int(r.get("qpu_cap", 0)),
+                parallel_capacity=int(r.get("parallel_cap", 1)),
+                cost_per_sec=float(r.get("cost_per_sec", 0.0)),
+                queue_delay=float(r.get("queue_delay", 0.0))
             )
         )
     ids_sorted = sorted([r.res_id for r in res])

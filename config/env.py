@@ -5,7 +5,7 @@ import os
 
 @dataclass
 class QGAConf:
-    job_path: str = "jobs.json"
+    jobs_path: str = "jobs.json"
     resources_path: str = "resources.json"
     generation: int = 50
     pop_size: int = 25

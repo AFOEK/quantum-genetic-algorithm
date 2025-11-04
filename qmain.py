@@ -5,7 +5,7 @@ import math
 
 def main():
     conf = load_env_config(".qga.env")
-    jobs, res = load_workload(conf.job_path, conf.resources_path)
+    jobs, res = load_workload(conf.jobs_path, conf.resources_path)
 
     if conf.num_qubits is None:
         n_res = len(res)
