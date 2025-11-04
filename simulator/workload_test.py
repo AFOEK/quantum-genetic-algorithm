@@ -37,7 +37,7 @@ def demo_workload():
             gpu_cap=0,
             qpu_cap=1,
             parallel_capacity=1,
-            cost_per_sec=0.1,
+            cost_per_sec=0.10,
             queue_delay=10.0
         )
     ]
@@ -51,7 +51,7 @@ def demo_workload():
             qpu_req=0,
             deadline=15.0,
             priority=1.0,
-            runtime_profiler={"cpu":10.0, "gpu":5.0}
+            runtime_profiler={"cpu": 10.0, "gpu": 5.0}
         ),
         Job(
             job_id=1,
@@ -61,7 +61,7 @@ def demo_workload():
             qpu_req=0,
             deadline=25.0,
             priority=1.5,
-            runtime_profiler={"cpu":40.0, "gpu":15.0}
+            runtime_profiler={"cpu": 40.0, "gpu": 15.0}
         ),
         Job(
             job_id=2,
@@ -71,17 +71,18 @@ def demo_workload():
             qpu_req=1,
             deadline=50.0,
             priority=2.0,
-            runtime_profiler={"cpu":100.0, "qpu":0.0}
+            runtime_profiler={"cpu": 100.0, "qpu": 8.0}   # give QPU a real runtime
         ),
+        # PATCHED: make Job 3 GPU-only (feasible with your GPU node)
         Job(
             job_id=3,
-            cpu_req=2,
-            ram_req=4,
-            gpu_req=4,
-            qpu_req=1,
+            cpu_req=4,
+            ram_req=8,
+            gpu_req=2,          # <= gpu_cap of resource 1
+            qpu_req=0,          # was 1 (impossible with single-resource model)
             deadline=75.0,
             priority=2.5,
-            runtime_profiler={"cpu":25.0,"gpu":75.0,"qpu":0.0}
+            runtime_profiler={"cpu": 60.0, "gpu": 25.0}
         ),
         Job(
             job_id=4,
@@ -91,7 +92,7 @@ def demo_workload():
             qpu_req=0,
             deadline=45.0,
             priority=2.0,
-            runtime_profiler={"cpu":10.0,"gpu":35.0}
+            runtime_profiler={"cpu": 10.0, "gpu": 35.0}
         )
     ]
 

@@ -1,21 +1,30 @@
-from simulator.workload_test import demo_workload
 from quantum_backend.run_qga import run_qga
+from simulator.io import load_workload
+from config.env import load_env_config
+import math
 
 def main():
-    jobs, res = demo_workload()
+    conf = load_env_config(".qga.env")
+    jobs, res = load_workload(conf.job_path, conf.resources_path)
+
+    if conf.num_qubits is None:
+        n_res = len(res)
+        num_qubits = max(1, math.ceil(math.log2(max(1, n_res))))
 
     best, hist = run_qga(
         jobs,
         res,
-        gen=50,
-        pop_size=25,
-        elite_k=12,
-        lr_start= 0.08,
-        lr_decay= 0.95,
-        mutation_prob= 0.20,
-        mutation_sigma= 0.03,
-        epsilon_start= 0.10,
-        epsilon_decay= 0.90
+        gen=conf.generation,
+        pop_size=conf.pop_size,
+        elite_k=conf.elite_k,
+        lr_start= conf.lr_start,
+        lr_decay= conf.lr_decay,
+        mutation_prob= conf.mutation_prob,
+        mutation_sigma= conf.mutation_sigma,
+        epsilon_start= conf.eps_start,
+        epsilon_decay= conf.eps_decay,
+        num_qubits=num_qubits,
+        shots=conf.shots
     )
 
     print("assignment (job -> resource): ", best[0])

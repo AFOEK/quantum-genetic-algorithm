@@ -1,0 +1,40 @@
+{
+  "resources": [
+    {
+      "res_id": 0,
+      "name": "cpu_sm",
+      "res_type": "cpu",
+      "cpu_cap": 4,
+      "ram_cap": 8,
+      "gpu_cap": 0,
+      "qpu_cap": 0,
+      "parallel_capacity": 2,
+      "cost_per_sec": 0.02,
+      "queue_delay": 0.0
+    },
+    {
+      "res_id": 1,
+      "name": "gpu_mid",
+      "res_type": "gpu",
+      "cpu_cap": 16,
+      "ram_cap": 64,
+      "gpu_cap": 2,
+      "qpu_cap": 0,
+      "parallel_capacity": 1,
+      "cost_per_sec": 0.75,
+      "queue_delay": 2.0
+    },
+    {
+      "res_id": 2,
+      "name": "qpu_small",
+      "res_type": "qpu",
+      "cpu_cap": 0,
+      "ram_cap": 0,
+      "gpu_cap": 0,
+      "qpu_cap": 1,
+      "parallel_capacity": 1,
+      "cost_per_sec": 0.10,
+      "queue_delay": 10.0
+    }
+  ]
+}

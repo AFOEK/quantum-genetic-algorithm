@@ -1,0 +1,54 @@
+{
+  "jobs": [
+    {
+      "job_id": 0,
+      "cpu_req": 1,
+      "ram_req": 1,
+      "gpu_req": 0,
+      "qpu_req": 0,
+      "deadline": 15.0,
+      "priority": 1.0,
+      "runtime_profile": { "cpu": 10.0, "gpu": 5.0 }
+    },
+    {
+      "job_id": 1,
+      "cpu_req": 8,
+      "ram_req": 16,
+      "gpu_req": 2,
+      "qpu_req": 0,
+      "deadline": 25.0,
+      "priority": 1.5,
+      "runtime_profile": { "cpu": 40.0, "gpu": 15.0 }
+    },
+    {
+      "job_id": 2,
+      "cpu_req": 1,
+      "ram_req": 2,
+      "gpu_req": 0,
+      "qpu_req": 1,
+      "deadline": 50.0,
+      "priority": 2.0,
+      "runtime_profile": { "cpu": 100.0, "qpu": 8.0 }
+    },
+    {
+      "job_id": 3,
+      "cpu_req": 4,
+      "ram_req": 8,
+      "gpu_req": 2,
+      "qpu_req": 0,
+      "deadline": 75.0,
+      "priority": 2.5,
+      "runtime_profile": { "cpu": 60.0, "gpu": 25.0 }
+    },
+    {
+      "job_id": 4,
+      "cpu_req": 4,
+      "ram_req": 16,
+      "gpu_req": 0,
+      "qpu_req": 0,
+      "deadline": 45.0,
+      "priority": 2.0,
+      "runtime_profile": { "cpu": 10.0, "gpu": 35.0 }
+    }
+  ]
+}

@@ -6,25 +6,26 @@ from .circuit_update import update_toward_res
 import numpy as np
 
 class QGAState:
-    def __init__(self, num_jobs: int, num_res: int):
+    def __init__(self, num_jobs: int, num_res: int, num_qubits: int, shots: int):
         self.num_jobs = num_jobs
         self.num_res = num_res
 
-        self.num_qubits = 2
+        self.num_qubits = num_qubits
+        self.shots = shots
 
         self.job_circuits: List[QJob] = [
             QJob(num_qubits=self.num_qubits)
             for _ in range(num_jobs)
         ]
     
-    def sample_assignment(self, jobs, res, eps: float= 0.0):
+    def sample_assignment(self, jobs, res, shots = 512 , eps: float = 0.0):
         assignment = []
         for j in range(self.num_jobs):
             if np.random.rand() < eps:
                 feasible = [r.res_id for r in res if job_can_run_on(jobs[j], r)]
                 ridx = np.random.choice(feasible) if feasible else 0
             else:
-                ridx =  sample_job_res_masked(jobs[j], self.job_circuits[j], res, shots=512)
+                ridx =  sample_job_res_masked(jobs[j], self.job_circuits[j], res, shots=shots)
             assignment.append(int(ridx))
         return assignment
     

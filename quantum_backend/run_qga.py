@@ -15,9 +15,11 @@ def run_qga(
         mutation_prob: float = 0.20,
         mutation_sigma: float = 0.03,
         epsilon_start: float = 0.10,
-        epsilon_decay: float = 0.90
+        epsilon_decay: float = 0.90,
+        num_qubits: int = 2,
+        shots: int = 512
 ):
-    qga = QGAState(num_jobs=len(jobs), num_res=len(res))
+    qga = QGAState(num_jobs=len(jobs), num_res=len(res), num_qubits=num_qubits)
     best_overall: Tuple[List[int], float, Dict[str, Any]] = None
     hist: List[Dict[str, Any]] = []
     lr = lr_start
@@ -26,7 +28,7 @@ def run_qga(
     for gens in range(gen):
         pop = []
         for _ in range(pop_size):
-            assign = qga.sample_assignment(jobs, res, epsilon)
+            assign = qga.sample_assignment(jobs, res, shots, epsilon)
             pop.append(assign)
 
         scored = evaluate_population(pop, jobs, res)
