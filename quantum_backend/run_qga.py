@@ -53,7 +53,7 @@ def run_qga(
     for gens in range(gen):
         batch = random.sample(hard_idxs, k=min(batch_size, len(hard_idxs))) if hard_idxs else []
 
-        pop = [make_batches(batch for _ in range(pop_size))]
+        pop = [make_batches(batch) for _ in range(pop_size)]
         scored = evaluate_population(pop, jobs, res)
         best_gen = scored[0]
         if best_overall is None or best_gen[1] < best_overall[1]:
