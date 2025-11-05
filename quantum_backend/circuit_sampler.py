@@ -18,7 +18,7 @@ def sample_to_res(job_circ, num_res: int, shots: int = 512):
     result = sim.run(tqc, shots=shots).result()
     counts = result.get_counts()
 
-    bitstrings = list(counts.key())
+    bitstrings = list(counts.keys())
     freqs = np.array([counts[b] for b in bitstrings], dtype=float)
 
     probs = freqs / freqs.sum()
@@ -27,26 +27,38 @@ def sample_to_res(job_circ, num_res: int, shots: int = 512):
     res_idx = bitstring_to_res(chosen, num_res)
     return res_idx, probs, bitstrings
 
-def sample_job_res_masked(job, job_circ, res, shots = 512):
+def sample_job_res_masked(job, job_circ, res, shots = 512, allowed=None):
     num_res = len(res)
     qc = job_circ.build_circuit()
     tqc = transpile(qc, sim)
     result = sim.run(tqc, shots=shots).result()
     counts = result.get_counts()
 
-    allowed = []
-    freqs = []
-    for bs, freq in counts.items():
-        ridx = int(bs, 2)
-        if ridx < num_res  and job_can_run_on(job, res[ridx]):
-            allowed.append(bs)
-            freqs.append(freq)
+    allowed = set(int(a) for a in allowed) if allowed is not None else None
 
-    if allowed:
-        probs = np.array(freqs, float)
-        probs /= probs.sum()
-        chosen_bs = np.random.choice(allowed, p=probs)
-        return int(chosen_bs, 2)
+    acc_probs = np.zeros(num_res, dtype=float)
     
-    feasible = [r.res_id for r in res if job_can_run_on(job, r)]
-    return feasible[0] if feasible else 0
+    for bs, freq in counts.items():
+        ridx = bitstring_to_res(bs, num_res=num_res)
+        if allowed is not None and ridx not in allowed:
+            continue
+        if job_can_run_on(job, res[ridx]):
+            continue
+
+        acc_probs[ridx] += float(freq)
+
+    total = acc_probs.sum()
+    if total > 0:
+        probs = acc_probs / total
+        return int(np.random.choice(num_res, p=probs))
+    
+    feasible_ids = [r.res_id for r in res if job_can_run_on(job, r)]
+    if allowed is not None:
+        cand = [rid for rid in feasible_ids if rid in allowed]
+        if cand:
+            return int(np.random.choice(cand))
+        
+    if feasible_ids:
+        return int(np.random.choice(cand))
+    
+    return 0

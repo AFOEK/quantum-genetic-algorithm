@@ -1,12 +1,18 @@
 from quantum_backend.run_qga import run_qga
 from simulator.io import load_workload
 from config.env import load_env_config
+from simulator.precompute import precompute_allowed, find_trivial_jobs
 import math
 
 def main():
     conf = load_env_config(".qga.env")
     jobs, res = load_workload(conf.jobs_path, conf.resources_path)
 
+    allowed = precompute_allowed(jobs, res)
+    fixed, hard = find_trivial_jobs(jobs, res, allowed, dominance_ratio=0.60)
+
+    batch_size = min(64, max(32, int(0.25 * max(1, len(hard)))))
+    
     if conf.num_qubits is None:
         n_res = len(res)
         num_qubits = max(1, math.ceil(math.log2(max(1, n_res))))
@@ -24,7 +30,11 @@ def main():
         epsilon_start= conf.eps_start,
         epsilon_decay= conf.eps_decay,
         num_qubits=num_qubits,
-        shots=conf.shots
+        shots=conf.shots,
+        allowed=allowed,
+        fixed_assign=fixed,
+        hard_job=hard,
+        batch_size=batch_size
     )
 
     print("assignment (job -> resource): ", best[0])

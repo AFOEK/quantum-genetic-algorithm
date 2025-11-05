@@ -1,4 +1,4 @@
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Optional
 from optimizer.eval_pop import evaluate_population
 from quantum_backend.quantum_state import QGAState
 import numpy as np
@@ -17,7 +17,12 @@ def run_qga(
         epsilon_start: float = 0.10,
         epsilon_decay: float = 0.90,
         num_qubits: int = 2,
-        shots: int = 512
+        shots: int = 512,
+        allowed: Optional[Dict[int, List[int]]] = None,
+        fixed_assign: Optional[Dict[int, int]] = None,
+        hard_job: Optional[List[int]] = None,
+        batch_size: int = 64
+
 ):
     qga = QGAState(num_jobs=len(jobs), num_res=len(res), num_qubits=num_qubits, shots=shots)
     best_overall: Tuple[List[int], float, Dict[str, Any]] = None
@@ -25,12 +30,30 @@ def run_qga(
     lr = lr_start
     epsilon = epsilon_start
 
-    for gens in range(gen):
-        pop = []
-        for _ in range(pop_size):
-            assign = qga.sample_assignment(jobs, res, shots, epsilon)
-            pop.append(assign)
+    current_assign = [0] * len(jobs)
+    if fixed_assign:
+        for j, r in fixed_assign.items():
+            current_assign[j] = r
 
+    def make_batches(batch_idxs):
+        current = current_assign.copy()
+        samples = qga.sample_assignment(jobs, res, shots, epsilon, allowed)
+
+        for j in batch_idxs:
+            current[j] = samples[j]
+
+        if fixed_assign:
+            for j, r in fixed_assign.items():
+                current[j] = r
+        
+        return current
+    
+    hard_idxs = hard_job if hard_job is not None else list(range(len(jobs)))
+
+    for gens in range(gen):
+        batch = random.sample(hard_idxs, k=min(batch_size, len(hard_idxs))) if hard_idxs else []
+
+        pop = [make_batches(batch for _ in range(pop_size))]
         scored = evaluate_population(pop, jobs, res)
         best_gen = scored[0]
         if best_overall is None or best_gen[1] < best_overall[1]:
@@ -45,19 +68,19 @@ def run_qga(
 
         elites = scored[:elite_k]
         learn_from_assign = random.choice(elites)[0]
-
         mean_dtheta = qga.update_towards_elite(learn_from_assign, lr= lr)
-        print(f"[GEN {gens:02d}] best_fit={best_gen[1]:.3f}  mean Δθ={mean_dtheta:.4f}  lr={lr:.4f}  eps={epsilon:.3f}")
         
         for jc in qga.job_circuits:
             if np.random.rand() < mutation_prob:
                 jc.theta += np.random.normal(0, mutation_sigma, size=jc.theta.shape)
                 jc.theta = np.clip(jc.theta, 0.0, np.pi)
         
+        current_assign = best_gen[0].copy()
+
         lr *= lr_decay
         epsilon *= epsilon_decay
 
         lr = max(lr, 0.01)
         epsilon = max(epsilon, 0.02)
-
+        print(f"[GEN {gens:02d}] best_fit={best_gen[1]:.3f}  mean Δθ={mean_dtheta:.4f}  lr={lr:.4f}  eps={epsilon:.3f}")
     return best_overall, hist

@@ -28,21 +28,33 @@ class QGAState:
             for _ in range(num_jobs)
         ]
     
-    def sample_assignment(self, jobs, res, shots: Optional[int] = None , eps: float = 0.0) -> List[int]:
+    def sample_assignment(self, jobs, res, shots: Optional[int] = None , eps: float = 0.0, allowed: Optional[dict] = None) -> List[int]:
         use_shots = int(self.shots if shots is None else shots)
         assignment = []
 
         for j in range(self.num_jobs):
+            if allowed is not None:
+                feasible_list = list(allowed.get(j, []))
+            else:
+                feasible_list = [r.res_id for r in res if job_can_run_on(jobs[j], r)]
+
+
             if np.random.rand() < eps:
-                feasible = [r.res_id for r in res if job_can_run_on(jobs[j], r)]
-                if feasible:
-                    ridx = int(np.random.choice(feasible))
+                if feasible_list:
+                    ridx = int(np.random.choice(feasible_list))
                 else:
                     rp = getattr(jobs[j], "runtime_profiler", {})
                     cands = [r for r in res if r.res_type in rp]
-                    ridx = cands[0].res_id if not cands else min(cands, key=lambda r: rp[r.res_type]).res_id
+                    ridx = (min(cands, key=lambda r: rp[r.res_type]).res_id if cands else 0)
             else:
-                ridx = sample_job_res_masked(jobs[j], self.job_circuits[j], res, shots=use_shots)
+                try:
+                    ridx = sample_job_res_masked(jobs[j], self.job_circuits[j], res, shots=use_shots, allowed=feasible_list)
+                except TypeError:
+                    ridx = sample_job_res_masked(jobs[j], self.job_circuits[j], res, shots=use_shots)
+            
+                if feasible_list and ridx not in feasible_list:
+                    ridx = int(np.random.choice(feasible_list))
+            
             assignment.append(int(ridx))
 
         return assignment
