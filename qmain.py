@@ -86,7 +86,14 @@ def main():
         allowed=allowed,
         fixed_assign=fixed,
         hard_job=hard,
-        batch_size=batch_size
+        batch_size=batch_size,
+        w_cost=conf.w_cost,
+        w_makespan=conf.w_makespan,
+        w_sla=conf.w_sla,
+        w_penalty=conf.w_penalty,
+        w_violation=conf.w_violation,
+        w_storage=conf.w_storage,
+        w_carbon=conf.w_carbon
     )
 
     print_best(best)

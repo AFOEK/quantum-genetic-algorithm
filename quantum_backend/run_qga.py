@@ -21,7 +21,14 @@ def run_qga(
         allowed: Optional[Dict[int, List[int]]] = None,
         fixed_assign: Optional[Dict[int, int]] = None,
         hard_job: Optional[List[int]] = None,
-        batch_size: int = 64
+        batch_size: int = 64,
+        w_cost: float = 1.0,
+        w_makespan: float = 1.0,
+        w_sla: float = 10.0,
+        w_penalty: float = 10.0,
+        w_violation: float = 10000.0,
+        w_storage: float = 1.0,
+        w_carbon: float = 1.0
 
 ):
     qga = QGAState(num_jobs=len(jobs), num_res=len(res), num_qubits=num_qubits, shots=shots)
@@ -49,12 +56,22 @@ def run_qga(
         return current
     
     hard_idxs = hard_job if hard_job is not None else list(range(len(jobs)))
+    
+    weights = dict(
+    w_cost=w_cost,
+    w_makespan=w_makespan,
+    w_sla=w_sla,
+    w_penalty=w_penalty,
+    w_violation=w_violation,
+    w_storage=w_storage,
+    w_carbon=w_carbon,
+    )
 
     for gens in range(gen):
         batch = random.sample(hard_idxs, k=min(batch_size, len(hard_idxs))) if hard_idxs else []
 
         pop = [make_batches(batch) for _ in range(pop_size)]
-        scored = evaluate_population(pop, jobs, res)
+        scored, fits, mets = evaluate_population(pop, jobs, res, weights=weights)
         best_gen = scored[0]
         if best_overall is None or best_gen[1] < best_overall[1]:
             best_overall = best_gen

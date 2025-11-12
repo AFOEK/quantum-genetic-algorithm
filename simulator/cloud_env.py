@@ -32,7 +32,9 @@ def sim_alloc(
     storage_cost_total = 0.0
     energy_kwh_total = 0.0
     carbon_kg_total = 0.0
-    job_finish_times = {}
+    job_finish_times: Dict[int, float] = {}
+    io_time_total = 0.0
+    pref_mismatch_count = 0
 
     cap_violation = 0
 
@@ -63,8 +65,8 @@ def sim_alloc(
             if batch_storage > getattr(r, "disk_cap_gb", 0):
                 cap_violation += 1
 
-            runtimes = []
-            per_job_runtime = []
+            runtimes: List[float] = [] 
+            per_job_runtime: List[tuple] = []
 
             for j in batch:
                 rt = j.runtime_profiler.get(r.res_type, None)
@@ -93,7 +95,7 @@ def sim_alloc(
                 finish_t = current_time + batch_runtime
                 job_finish_times[j.job_id] = finish_t
 
-                total_cost += runtimes * r.cost_per_sec
+                total_cost += rt_eff * r.cost_per_sec
 
                 hr_eff = rt_eff / 3600.0
                 storage_cost = getattr(j, "storage_req_gb", 0) * getattr(r, "disk_cost_per_gb_hour", 0.0) * hr_eff
@@ -102,6 +104,7 @@ def sim_alloc(
                     pref_mismatch_count += 1
                 storage_cost_total += storage_cost
 
+                #SLA Lateness
                 lateness = max(0.0, finish_t - j.deadline)
                 total_penalty += lateness * j.priority
                 if lateness > 0:
