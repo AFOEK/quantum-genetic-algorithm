@@ -18,6 +18,13 @@ class QGAConf:
     mutation_sigma: float = 0.03
     num_qubits: Optional[int] = None
     shots: int = 512
+    w_cost=1.0
+    w_makespan=1.0
+    w_sla=10.0
+    w_penalty=10.0
+    w_violation=10000.0
+    w_storage=1.0
+    w_carbon=1.0
 
 def parse_bool(v: str) -> bool:
     return v.strip().lower() in {"1", "true", "yes", "on"}
@@ -59,6 +66,13 @@ def load_env_config(path: str = ".qga.env") -> QGAConf:
     set_if("EPS_DECAY", float, "eps_decay")
     set_if("MUTATION_PROB", float, "mutation_prob")
     set_if("MUTATION_SIGMA", float, "mutation_sigma")
+    set_if("W_COST", float, "w_cost")
+    set_if("W_MAKESPAN", float, "w_makespan")
+    set_if("W_SLA", float, "w_sla")
+    set_if("W_PENALTY", float, "w_penalty")
+    set_if("W_VIOLATION", float, "w_violation")
+    set_if("W_STORAGE", float, "w_storage")
+    set_if("W_CARBON", float, "w_carbon")
 
     if "NUM_QUBITS" in kv:
         v = kv["NUM_QUBITS"].strip().upper()

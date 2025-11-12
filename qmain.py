@@ -12,23 +12,36 @@ def short_assign(vectors, head=10, tail=3):
 
 def print_best(best_tuple):
     assign, fit, m = best_tuple
+    io_sec = float(m.get('io_time_total_sec', 0.0))
+    io_hr  = io_sec / 3600.0
+
     print("\n=== BEST SOLUTION ===")
-    print(f"fitness   : {fit:,.3f}")
-    print(f"cost      : {m.get('total_cost', 0.0):,.3f}")
-    print(f"makespan  : {m.get('makespan', 0.0):,.3f}")
-    print(f"penalty   : {m.get('sla_penalty', 0.0):,.3f}")
-    print(f"violations: {m.get('capacity_violations', 0)}")
-    print(f"assign    : {short_assign(assign)}")
-    print("======================\n")
+    print(f"fitness     : {fit:,.3f}")
+    print(f"cost        : {m.get('total_cost', 0.0):,.3f}")
+    print(f"makespan    : {m.get('makespan', 0.0):,.3f}")
+    print(f"SLA penalty : {m.get('sla_penalty', 0.0):,.3f}")
+    print(f"SLA missed  : {m.get('sla_violations', 0)}")
+    print(f"violations  : {m.get('capacity_violations', 0)}")
+    print(f"storage $   : {m.get('storage_cost_total', 0.0):,.6f}")
+    print(f"energy kWh  : {m.get('energy_kwh_total', 0.0):,.6f}")
+    print(f"CO₂ (kg)    : {m.get('carbon_kg_total', 0.0):,.6f}")
+    print(f"disk I/O    : {io_sec:,.1f} s  ({io_hr:.3f} h)")
+    print(f"pref mismatch: {m.get('pref_mismatch_count', 0)}")
+    print(f"assign      : {short_assign(assign)}")
+    print("==============================================\n")
+
 
 def print_history(history):
     print("=== TRAINING HISTORY (one line per generation) ===")
-    print("gen |      fit |   cost | makespan | penalty | viol | assign")
-    print("----+----------+--------+----------+---------+------+---------------------------")
+    print("gen |     fit |   cost | makespan |  SLApen | viol |  CO₂kg |  IO(s) | assign")
+    print("----+---------+--------+----------+---------+------+--------+--------+---------------------")
     for h in history:
-        print(f"{h['generation']:3d} | {h['best_fit']:8.3f} |"
-              f"{h.get('cost', 0.0):7.1f} | {h.get('makespan', 0.0):8.1f} |"
-              f"{h.get('penalty', 0.0):7.1f} | {h.get('viol', 0):4d} | {short_assign(h['best_assign'])}")
+        m = h.get('best_metrics', {})
+        io_s = float(m.get('io_time_total_sec', 0.0))
+        print(f"{h['generation']:3d} | {h['best_fit']:8.1f} |"
+              f"{m.get('total_cost', 0.0):7.1f} | {m.get('makespan', 0.0):8.1f} |"
+              f"{m.get('sla_penalty', 0.0):7.1f} | {m.get('capacity_violations', 0):4d} |"
+              f"{m.get('carbon_kg_total', 0.0):6.3f} | {io_s:6.1f} | {short_assign(h['best_assign'])}")
 
 def main():
     conf = load_env_config(".qga.env")
@@ -48,8 +61,12 @@ def main():
     print(f"batch_size={batch_size}  num_qubits={num_qubits}  shots={conf.shots}")
     print(f"gen={conf.generation}  pop={conf.pop_size}  elite={conf.elite_k}")
     print(f"lr_start={conf.lr_start}  lr_decay={conf.lr_decay}  "
-          f"eps_start={conf.eps_start}  eps_decay={conf.eps_decay}  "
-          f"mut_p={conf.mutation_prob}  mut_sigma={conf.mutation_sigma}")
+        f"eps_start={conf.eps_start}  eps_decay={conf.eps_decay}  "
+        f"mut_p={conf.mutation_prob}  mut_sigma={conf.mutation_sigma}")
+    print("---- weights ----")
+    print(f"cost={conf.w_cost}  makespan={conf.w_makespan}  sla={conf.w_sla}  "
+        f"penalty={conf.w_penalty}  violation={conf.w_violation}  "
+        f"storage={conf.w_storage}  carbon={conf.w_carbon}")
     print("===================\n")
 
     best, hist = run_qga(

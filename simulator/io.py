@@ -28,7 +28,13 @@ def load_resources(path: str) -> List[Resource]:
                 qpu_cap=int(r.get("qpu_cap", 0)),
                 parallel_capacity=int(r.get("parallel_cap", 1)),
                 cost_per_sec=float(r.get("cost_per_sec", 0.0)),
-                queue_delay=float(r.get("queue_delay", 0.0))
+                queue_delay=float(r.get("queue_delay", 0.0)),
+                power_idle_w=float(r.get("power_idle_w", 0.0)),
+                power_active_w=float(r.get("power_active_w", 0.0)),
+                emission_kg_per_kwh=float(r.get("emission_kg_per_kwh", 0.0)),
+                disk_type=str(r.get("disk_type", "ssd")).lower(),
+                disk_cap_gb=int(r.get("disk_cap_gb", 0)),
+                disk_cost_per_gb_hour=float(r.get("disk_cost_per_gb_hour", 0.0))
             )
         )
     ids_sorted = sorted([r.res_id for r in res])
@@ -59,7 +65,10 @@ def load_jobs(path: str) -> List[Job]:
                 qpu_req=int(j.get("qpu_req", 0)),
                 deadline=float(j.get("deadline", 0.0)),
                 priority=float(j.get("priority", 0.0)),
-                runtime_profiler=runtime_profiler
+                runtime_profiler=runtime_profiler,
+                storage_req_gb=int(j.get("storage_req_gb", 0)),
+                pref_disk_type=str(j.get("pref_disk_type", "any")).lower(),
+                io_gb=float(j.get("io_gb", 0.0))
             )
         )
     ids_sorted = sorted([j.job_id for j in jobs])

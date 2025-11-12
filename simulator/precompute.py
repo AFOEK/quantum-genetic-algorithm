@@ -10,6 +10,7 @@ def precompute_allowed(jobs, res) -> Dict[int, List[int]]:
 def find_trivial_jobs(jobs, resources, allowed, dominance_ratio: float = 0.0) -> Tuple[Dict[int, int], List[int]]:
     fixed = {}
     hard = []
+    
     for j, job in enumerate(jobs):
         feasibility = allowed[j]
         if not feasibility:
