@@ -49,6 +49,8 @@ def main():
 
     allowed = precompute_allowed(jobs, res)
     fixed, hard = find_trivial_jobs(jobs, res, allowed, dominance_ratio=0.60)
+    impossible = [j for j, feas in allowed.items() if len(feas) == 0]
+    easy_jobs = list(fixed.keys())
 
     batch_size = min(64, max(32, int(0.25 * max(1, len(hard)))))
     
@@ -57,16 +59,21 @@ def main():
         num_qubits = max(1, math.ceil(math.log2(max(1, n_res))))
 
     print("=== RUN CONFIG ===")
-    print(f"jobs={len(jobs)}  resources={len(res)}  hard_jobs={len(hard)}  fixed={len(fixed)}")
+    print(f"jobs={len(jobs)}  resources={len(res)}")
+    print(f"easy_jobs={len(easy_jobs)}  hard_jobs={len(hard)}  impossible_jobs={len(impossible)}")
     print(f"batch_size={batch_size}  num_qubits={num_qubits}  shots={conf.shots}")
     print(f"gen={conf.generation}  pop={conf.pop_size}  elite={conf.elite_k}")
-    print(f"lr_start={conf.lr_start}  lr_decay={conf.lr_decay}  "
+    print(
+        f"lr_start={conf.lr_start}  lr_decay={conf.lr_decay}  "
         f"eps_start={conf.eps_start}  eps_decay={conf.eps_decay}  "
-        f"mut_p={conf.mutation_prob}  mut_sigma={conf.mutation_sigma}")
+        f"mut_p={conf.mutation_prob}  mut_sigma={conf.mutation_sigma}"
+    )
     print("---- weights ----")
-    print(f"cost={conf.w_cost}  makespan={conf.w_makespan}  sla={conf.w_sla}  "
+    print(
+        f"cost={conf.w_cost}  makespan={conf.w_makespan}  sla={conf.w_sla}  "
         f"penalty={conf.w_penalty}  violation={conf.w_violation}  "
-        f"storage={conf.w_storage}  carbon={conf.w_carbon}")
+        f"storage={conf.w_storage}  carbon={conf.w_carbon}"
+    )
     print("===================\n")
 
     best, hist = run_qga(

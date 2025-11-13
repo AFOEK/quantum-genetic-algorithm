@@ -3,6 +3,7 @@ from optimizer.eval_pop import evaluate_population
 from quantum_backend.quantum_state import QGAState
 import numpy as np
 import random
+import time
 
 def run_qga(
         jobs,
@@ -68,10 +69,11 @@ def run_qga(
     )
 
     for gens in range(gen):
+        t_start = time.time()
         batch = random.sample(hard_idxs, k=min(batch_size, len(hard_idxs))) if hard_idxs else []
 
         pop = [make_batches(batch) for _ in range(pop_size)]
-        scored, fits, mets = evaluate_population(pop, jobs, res, weights=weights)
+        scored, fits, mets = evaluate_population(pop, jobs, res, weights=weights, parallel=True, max_workers=8)
         best_gen = scored[0]
         if best_overall is None or best_gen[1] < best_overall[1]:
             best_overall = best_gen
@@ -99,5 +101,7 @@ def run_qga(
 
         lr = max(lr, 0.01)
         epsilon = max(epsilon, 0.02)
-        print(f"[GEN {gens:02d}] best_fit={best_gen[1]:.3f}  mean Δθ={mean_dtheta:.4f}  lr={lr:.4f}  eps={epsilon:.3f}")
+        t_stop = time.time()
+        t_delta = t_stop - t_start
+        print(f"{t_delta:.2f}s | [GEN {gens:02d}] | best_fit={best_gen[1]:.3f} | mean angleΔ/μΔθ={mean_dtheta:.4f} | lr={lr:.4f} | epsilon/ε={epsilon:.3f}")
     return best_overall, hist

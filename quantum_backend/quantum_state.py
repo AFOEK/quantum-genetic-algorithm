@@ -1,6 +1,6 @@
 from typing import List, Optional
 from .circuit_builder import QJob
-from .circuit_sampler import sample_job_res_masked
+from .circuit_sampler import sample_jobs_res_masked_batch
 from simulator.feasibility import job_can_run_on
 from .circuit_update import update_toward_res
 import numpy as np
@@ -30,34 +30,51 @@ class QGAState:
     
     def sample_assignment(self, jobs, res, shots: Optional[int] = None , eps: float = 0.0, allowed: Optional[dict] = None) -> List[int]:
         use_shots = int(self.shots if shots is None else shots)
-        assignment = []
+        assignment = [None] * self.num_jobs
+
+        q_jobs = []
+        q_circs = []
+        q_indices = []
 
         for j in range(self.num_jobs):
-            if allowed is not None:
-                feasible_list = list(allowed.get(j, []))
-            else:
-                feasible_list = [r.res_id for r in res if job_can_run_on(jobs[j], r)]
-
-
+            job = jobs[j]
             if np.random.rand() < eps:
-                if feasible_list:
-                    ridx = int(np.random.choice(feasible_list))
+                feasible = [r.res_id for r in res if job_can_run_on(job, r)]
+                if feasible:
+                    ridx = int(np.random.choice(feasible))
                 else:
-                    rp = getattr(jobs[j], "runtime_profiler", {})
+                    rp = getattr(job, "runtime_profiler", {})
                     cands = [r for r in res if r.res_type in rp]
-                    ridx = (min(cands, key=lambda r: rp[r.res_type]).res_id if cands else 0)
+                    if cands:
+                        ridx = min(cands, key=lambda r: rp[r.res_type]).res_id
+                    else:
+                        ridx = 0
+                assignment[j] = ridx
             else:
-                try:
-                    ridx = sample_job_res_masked(jobs[j], self.job_circuits[j], res, shots=use_shots, allowed=feasible_list)
-                except TypeError:
-                    ridx = sample_job_res_masked(jobs[j], self.job_circuits[j], res, shots=use_shots)
-            
-                if feasible_list and ridx not in feasible_list:
-                    ridx = int(np.random.choice(feasible_list))
-            
-            assignment.append(int(ridx))
+                q_jobs.append(job)
+                q_circs.append(self.job_circuits[j])
+                q_indices.append(j)
 
+        if q_jobs:
+            if allowed is not None:
+                allowed_map = {job.job_id: allowed.get(job.job_id, None) for job in q_jobs}
+            else:
+                allowed_map = None
+
+            q_assigns = sample_jobs_res_masked_batch(
+                q_jobs,
+                q_circs,
+                res,
+                shots=use_shots,
+                allowed_map=allowed_map
+            )
+
+            for idx, ridx in zip(q_indices, q_assigns):
+                assignment[idx] = int(ridx)
+
+        assignment = [0 if a is None else a for a in assignment]
         return assignment
+        
     
     def update_towards_elite(self, elite_assign: List[int], lr: float = 0.01) -> float:
         before = [jc.theta.copy() for jc in self.job_circuits]
