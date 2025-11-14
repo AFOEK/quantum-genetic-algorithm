@@ -99,8 +99,8 @@ def run_qga(
         lr *= lr_decay
         epsilon *= epsilon_decay
 
-        lr = max(lr, 0.01)
-        epsilon = max(epsilon, 0.02)
+        lr = max(lr, 0.001)
+        epsilon = max(epsilon, 0.001)
         t_stop = time.time()
         t_delta = t_stop - t_start
         print(f"{t_delta:.2f}s | [GEN {gens:02d}] | best_fit={best_gen[1]:.3f} | μΔθ={mean_dtheta:.4f} | lr={lr:.4f} | ε={epsilon:.3f}")
