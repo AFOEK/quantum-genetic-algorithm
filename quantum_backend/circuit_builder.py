@@ -16,12 +16,11 @@ class QJob:
         if self._qc is None:
             qc = QuantumCircuit(self.num_qubits)
 
-            qc.ry(self.theta[0], 0)
-            qc.ry(self.theta[1], 1)
+            for q in range(self.num_qubits):
+                qc.ry(self.theta[q % len(self.theta)], q)
 
-            qc.cx(0, 1)
-            qc.ry(self.theta[2], 1)
-            qc.cx(0, 1)
+            for q in range(self.num_qubits - 1):
+                qc.cx(q, q + 1)
 
             qc.measure_all()
             self._qc = qc
