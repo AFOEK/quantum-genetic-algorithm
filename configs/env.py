@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Optional
 import os
 
-
 @dataclass
 class QGAConf:
     jobs_path: str = "jobs.json"
@@ -18,13 +17,13 @@ class QGAConf:
     mutation_sigma: float = 0.03
     num_qubits: Optional[int] = None
     shots: int = 512
-    w_cost=1.0
-    w_makespan=1.0
-    w_sla=10.0
-    w_penalty=10.0
-    w_violation=10000.0
-    w_storage=1.0
-    w_carbon=1.0
+    w_cost: float = 1.0
+    w_makespan: float = 1.0
+    w_sla: float = 10.0
+    w_penalty: float = 10.0
+    w_violation: float = 10000.0
+    w_storage: float = 1.0
+    w_carbon: float = 1.0
 
 def parse_bool(v: str) -> bool:
     return v.strip().lower() in {"1", "true", "yes", "on"}
@@ -38,8 +37,8 @@ def load_env_config(path: str = ".qga.env") -> QGAConf:
         if k in kv:
             try:
                 setattr(conf, attr, cast(kv[k]))
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[env] failed to parse {k}={kv[k]} for {attr}: {e}")
 
     kv = {}
     with open(path, "r") as f:
@@ -54,11 +53,11 @@ def load_env_config(path: str = ".qga.env") -> QGAConf:
 
             k, v = line.split("=", 1)
             kv[k.strip()] = v.strip()
-    
+
     set_if("JOBS_PATH", str, "jobs_path")
     set_if("RESOURCES_PATH", str, "resources_path")
-    set_if("GENERATIONS", str, "generations")
-    set_if("POP_SIZE", str, "pop_size")
+    set_if("GENERATION", int, "generation")
+    set_if("POP_SIZE", int, "pop_size")
     set_if("ELITE_K", int, "elite_k")
     set_if("LR_START", float, "lr_start")
     set_if("LR_DECAY", float, "lr_decay")
@@ -73,6 +72,7 @@ def load_env_config(path: str = ".qga.env") -> QGAConf:
     set_if("W_VIOLATION", float, "w_violation")
     set_if("W_STORAGE", float, "w_storage")
     set_if("W_CARBON", float, "w_carbon")
+    set_if("SHOTS", int, "shots")
 
     if "NUM_QUBITS" in kv:
         v = kv["NUM_QUBITS"].strip().upper()
@@ -83,6 +83,4 @@ def load_env_config(path: str = ".qga.env") -> QGAConf:
                 conf.num_qubits = int(v)
             except Exception:
                 conf.num_qubits = None
-
-    set_if("SHOTS", int, "shots")
     return conf
