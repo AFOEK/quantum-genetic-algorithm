@@ -91,8 +91,12 @@ def summarize_metrics(best, hist, out_path: str = "qga_report.json"):
     for h in hist:
         g = h["generation"]
         m = h["best_metrics"]
+        lr = h["lr"]
+        epsilon = h["epsilon"]
         row = {
             "generation": g,
+            "lr": lr,
+            "epsilon": epsilon,
             "best_fit": h["best_fit"],
             "total_cost":        m.get("total_cost", 0.0),
             "makespan":          m.get("makespan", 0.0),

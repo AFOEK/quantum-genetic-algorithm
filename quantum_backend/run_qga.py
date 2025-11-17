@@ -82,7 +82,9 @@ def run_qga(
             "generation": gens,
             "best_fit": best_gen[1],
             "best_metrics": best_gen[2],
-            "best_assign": best_gen[0]
+            "best_assign": best_gen[0],
+            "lr":lr,
+            "epsilon": epsilon
         })
 
         elites = scored[:elite_k]
